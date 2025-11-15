@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from db import insert_reading
 from datetime import datetime
 import json
+from zeroconf import ServiceInfo, Zeroconf
+import socket
 
 app = Flask(__name__)
 
@@ -47,6 +49,41 @@ def after_request_logging(response):
     return response
 
 
+# ================================================================
+# 🔥 mDNS BROADCAST SECTION (this is the autodetect magic)
+# ================================================================
+def start_mdns_service():
+    try:
+        hostname = "pico-server.local."
+        local_ip = socket.gethostbyname(socket.gethostname())
+
+        info = ServiceInfo(
+            "_http._tcp.local.",
+            "pico-server._http._tcp.local.",
+            addresses=[socket.inet_aton(local_ip)],
+            port=5000,
+            properties={},
+            server=hostname,
+        )
+
+        zeroconf = Zeroconf()
+        zeroconf.register_service(info)
+
+        log(f"[mDNS] Advertised on network as http://pico-server.local:5000")
+        log(f"[mDNS] Local IP: {local_ip}")
+
+    except Exception as e:
+        log(f"[mDNS] Error starting Zeroconf: {e}")
+
+
+# ================================================================
+# MAIN ENTRY POINT
+# ================================================================
 if __name__ == "__main__":
     log("Starting Flask server...")
+
+    # Start autodiscovery service BEFORE Flask run()
+    start_mdns_service()
+
+    # Start Flask
     app.run(debug=True, use_reloader=False)

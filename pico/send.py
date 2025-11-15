@@ -1,9 +1,6 @@
-# send.py — sends JSON to your Flask API
 import urequests
-import json
 
-UPLOAD_URL = "http://YOUR_PC_IP:5000/upload"
-# Replace YOUR_PC_IP with actual IP of PC hosting Flask server
+UPLOAD_URL = "http://pico-server.local:5000/upload"
 
 def send_payload(payload):
     try:
