@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pico IoT Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 480px;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    #values {
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+    }
+    canvas {
+      width: 100% !important;
+      height: 300px !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Pico IoT Dashboard</h1>
+    <div id="values">Loading latest sensor data...</div>
+    <br>
+    <canvas id="tempChart"></canvas>
+    <canvas id="humidityChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const valuesDiv = document.getElementById("values");
+
+    async function fetchLatest() {
+      try {
+        const r = await fetch("http://localhost:5000/latest"); // you will add this route
+        const data = await r.json();
+        valuesDiv.innerHTML = `
+          <b>Device:</b> ${data.device_id}<br>
+          <b>Temperature:</b> ${data.temp} °C<br>
+          <b>Humidity:</b> ${data.humidity} %<br>
+          <b>Timestamp:</b> ${data.timestamp}<br>
+        `;
+        return data;
+      } catch (err) {
+        valuesDiv.innerHTML = "Error loading data";
+        console.error(err);
+      }
+    }
+
+    let tempChart, humidityChart;
+
+    async function initCharts() {
+      const historyRes = await fetch("http://localhost:5000/history");
+      const history = await historyRes.json();
+
+      const labels = history.map(x => x.timestamp);
+      const temps = history.map(x => x.temp);
+      const hums = history.map(x => x.humidity);
+
+      tempChart = new Chart(document.getElementById("tempChart"), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: temps,
+            borderColor: 'red'
+          }]
+        },
+        options: { responsive: true }
+      });
+
+      humidityChart = new Chart(document.getElementById("humidityChart"), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Humidity (%)',
+            data: hums,
+            borderColor: 'blue'
+          }]
+        },
+        options: { responsive: true }
+      });
+    }
+
+    async function refresh() {
+      const latest = await fetchLatest();
+      setTimeout(refresh, 5000);
+    }
+
+    initCharts();
+    refresh();
+  </script>
+</body>
+</html>

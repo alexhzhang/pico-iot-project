@@ -2,17 +2,19 @@
 CREATE DATABASE IF NOT EXISTS pico_iot;
 USE pico_iot;
 
--- Table for raw sensor readings
+DROP TABLE IF EXISTS readings;
+
 CREATE TABLE readings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     device_id VARCHAR(64) NOT NULL,
     temp FLOAT,
     humidity FLOAT,
-    pressure FLOAT,
-    light FLOAT,
-    raw_json JSON,   -- store full payload for debugging/expansion
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    pressure FLOAT NULL,
+    light FLOAT NULL,
+    raw_json JSON,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Indexes for fast query filtering
 CREATE INDEX idx_device_time ON readings (device_id, created_at);

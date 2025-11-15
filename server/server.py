@@ -21,17 +21,15 @@ def before_request_logging():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    # Parse JSON
+    """Pico sensor upload endpoint."""
     data = request.get_json()
 
-    # Log raw JSON body
     log(f"Received JSON: {json.dumps(data, indent=2)}")
 
     if not data:
         log("ERROR: No JSON provided.")
         return jsonify({"error": "No JSON provided"}), 400
 
-    # Insert into database
     success = insert_reading(data)
 
     if success:
@@ -40,6 +38,80 @@ def upload():
     else:
         log("Database insert: FAILED")
         return jsonify({"error": "Database insert failed"}), 500
+
+
+# ================================================================
+# 📌 ADDED: /latest route
+# ================================================================
+from db import get_db  # ensure we can query
+
+@app.route("/latest", methods=["GET"])
+def latest():
+    """Returns the most recent sensor reading."""
+    conn = get_db()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT device_id, temp, humidity, pressure, light,
+                   raw_json, timestamp
+            FROM readings
+            ORDER BY id DESC
+            LIMIT 1
+        """)
+        row = cursor.fetchone()
+        cursor.close()
+
+        if not row:
+            return jsonify({"error": "No data found"}), 404
+
+        return jsonify(row)
+
+    except Exception as e:
+        print("[DB] Latest error:", e)
+        return jsonify({"error": "Query failed"}), 500
+
+    finally:
+        conn.close()
+
+
+# ================================================================
+# 📌 ADDED: /history route
+# ================================================================
+@app.route("/history", methods=["GET"])
+def history():
+    """Returns N most recent readings for charting."""
+    limit = int(request.args.get("limit", 100))
+
+    conn = get_db()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(f"""
+            SELECT device_id, temp, humidity, pressure, light,
+                   timestamp
+            FROM readings
+            ORDER BY id DESC
+            LIMIT {limit}
+        """)
+        rows = cursor.fetchall()
+        cursor.close()
+
+        rows.reverse()  # oldest → newest for charts
+
+        return jsonify(rows)
+
+    except Exception as e:
+        print("[DB] History error:", e)
+        return jsonify({"error": "Query failed"}), 500
+
+    finally:
+        conn.close()
+
 
 
 @app.after_request
