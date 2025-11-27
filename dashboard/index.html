@@ -47,7 +47,7 @@
 
     async function fetchLatest() {
       try {
-        const r = await fetch("http://localhost:5000/latest"); // you will add this route
+        const r = await fetch("http://localhost:5000/latest");
         const data = await r.json();
         valuesDiv.innerHTML = `
           <b>Device:</b> ${data.device_id}<br>
