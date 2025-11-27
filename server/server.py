@@ -41,7 +41,7 @@ def upload():
 
 
 # ================================================================
-# 📌 ADDED: /latest route
+#  ADDED: /latest route
 # ================================================================
 from db import get_db  # ensure we can query
 
@@ -78,7 +78,7 @@ def latest():
 
 
 # ================================================================
-# 📌 ADDED: /history route
+#  ADDED: /history route
 # ================================================================
 @app.route("/history", methods=["GET"])
 def history():
@@ -122,7 +122,7 @@ def after_request_logging(response):
 
 
 # ================================================================
-# 🔥 mDNS BROADCAST SECTION (this is the autodetect magic)
+#  mDNS BROADCAST SECTION (this is the autodetect magic)
 # ================================================================
 def start_mdns_service():
     try:
