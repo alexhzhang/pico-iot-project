@@ -159,5 +159,5 @@ git push                     # publish your changes
 # 👥 **Contributors**
 
 * **Alex Zhang**
-* **vincent Mascia**
+* **Vincent Mascia**
 
