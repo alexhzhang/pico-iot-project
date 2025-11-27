@@ -84,4 +84,4 @@ except Exception as e:
 
 
 
-#MicroPython automatically executes main.py after boot.py finishes.
+#remember: MicroPython automatically executes main.py after boot.py finishes.
