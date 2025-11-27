@@ -27,7 +27,8 @@ CREATE TABLE devices (
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Optional: Test seed data
+
+-- Optional: Test seed data --
 INSERT INTO readings (device_id, temp, humidity, pressure, light)
 VALUES
 ('pico-001', 23.5, 45.2, 1012.3, 300),
